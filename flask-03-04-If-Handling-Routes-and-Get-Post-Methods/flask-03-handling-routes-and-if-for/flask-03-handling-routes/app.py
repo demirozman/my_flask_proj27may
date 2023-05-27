@@ -94,5 +94,15 @@ def evens():
 
 # Add a statement to run the Flask application which can be reached from any host on port 80.
 if __name__== "__main__":
+<<<<<<< Updated upstream
     app.run(debug=True)
     # app.run(host='0.0.0.0', port=80)
+=======
+<<<<<<< HEAD
+    app.run(debug=True)
+    # app.run(host='0.0.0.0', port=80)
+=======
+    #app.run(debug=True)
+    app.run(host='0.0.0.0', port=80)
+>>>>>>> 45d8c5698d746e01c88c6875449d34cc6443bfd5
+>>>>>>> Stashed changes

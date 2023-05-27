@@ -15,13 +15,33 @@ def head():
 # and assign to the route of ('/')
 @app.route("/list")
 def header():
+<<<<<<< Updated upstream
     names =["Casper", "Sam", "Jasper"]
     # numbers = range (1,11)
     return render_template("body.html", object = names)
+=======
+<<<<<<< HEAD
+    names =["Casper", "Sam", "Jasper"]
+    # numbers = range (1,11)
+    return render_template("body.html", object = names)
+=======
+    names =["Osman Demir", "DevSecOps"]
+    names1 =["Can Be A Nobel Prize Winner"]
+    # numbers = range (1,11)
+    return render_template("body.html", object = names, object1 = names1)
+>>>>>>> 45d8c5698d746e01c88c6875449d34cc6443bfd5
+>>>>>>> Stashed changes
 
 
 # run this app in debug mode on your local.
 if __name__== "__main__":
     app.run(debug=True)
     # app.run(host='0.0.0.0', port=80)
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> 45d8c5698d746e01c88c6875449d34cc6443bfd5
+>>>>>>> Stashed changes
