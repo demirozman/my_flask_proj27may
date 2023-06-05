@@ -130,13 +130,13 @@ Resources:
           mkdir /var/www/templates
           chmod -R 777 /var/www/templates
           cd /var/www/
-          wget https://raw.githubusercontent.com/Samuelium06/flask03-04-handling/main/flask-03-04-If-Handling-Routes-and-Get-Post-Methods/flask-03-handling-routes-and-if-for/flask_If_for_structure/app.py
-          wget https://raw.githubusercontent.com/Samuelium06/flask03-04-handling/main/flask-03-04-If-Handling-Routes-and-Get-Post-Methods/flask-03-handling-routes-and-if-for/flask_If_for_structure/templates/index.html
-          wget https://raw.githubusercontent.com/Samuelium06/flask03-04-handling/main/flask-03-04-If-Handling-Routes-and-Get-Post-Methods/flask-03-handling-routes-and-if-for/flask_If_for_structure/templates/index.html
+          wget https://raw.githubusercontent.com/demirozman/my_flask_proj27may/main/Project-001-Roman-Numerals-Converter/app.py
+          wget https://raw.githubusercontent.com/demirozman/my_flask_proj27may/main/Project-001-Roman-Numerals-Converter/Project_001_.png
+          wget https://raw.githubusercontent.com/demirozman/my_flask_proj27may/main/Project-001-Roman-Numerals-Converter/project-001-snapshot.png
 
           cd /var/www/templates
-          # wget https://raw.githubusercontent.com/Samuelium06/flask03-04-handling/main/flask-03-04-If-Handling-Routes-and-Get-Post-Methods/flask-03-handling-routes-and-if-for/flask_If_for_structure/templates/body.html
-          # wget https://raw.githubusercontent.com/Samuelium06/flask03-04-handling/main/flask-03-04-If-Handling-Routes-and-Get-Post-Methods/flask-03-handling-routes-and-if-for/flask_If_for_structure/templates/index.html
+          # wget https://raw.githubusercontent.com/demirozman/my_flask_proj27may/main/Project-001-Roman-Numerals-Converter/templates/index.html
+          # wget https://raw.githubusercontent.com/demirozman/my_flask_proj27may/main/Project-001-Roman-Numerals-Converter/templates/result.html
           # python3 ../app.py
       LaunchTemplateName: dmrlaunchtemplatecfn
   DmrELBTargetGroup:
