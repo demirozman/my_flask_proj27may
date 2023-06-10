@@ -1,0 +1,172 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Roman Numerals Converter Application 
+  (Python Flask) deployed on AWS EC2 with Cloudformation
+  The Roman Numerals Converter Application aims to convert
+  the given number to the Roman numerals.
+
+Parameters:
+  Subnets:
+    Description: Choose at least 2 subnets
+    Type: List<AWS::EC2::Subnet::Id> #AWS::EC2::Subnet::Id
+  InstanceType:
+    Description: The environment type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.micro
+      - t2.nano
+  KeyName:
+    Description: Choose your Keyname
+    Type: AWS::EC2::KeyPair::KeyName
+  OSSelectionEnvParameter:
+    Description: The environment type
+    Type: String
+    AllowedValues:
+      - prod
+      - test
+    ConstraintDescription: Must be a prod or test
+  VPC:
+    Description: Choose one of the VPC
+    Type: AWS::EC2::VPC::Id
+Mappings:
+  RegionImageMap:
+    us-east-1:
+      prod: ami-0715c1897453cabd1
+      test: ami-0bef6cc322bfff646
+    us-east-2:
+      prod: ami-01107263728f3bef4
+      test: ami-05842f1afbf311a43
+    us-west-1:
+      prod: ami-0062dbf6b829f04e1
+      test: ami-04669a22aad391419
+    us-west-2:
+      prod: ami-0ab193018f3e9351b
+      test: ami-03c7c1f17ee073747
+    eu-west-1:
+      prod: ami-04f7efe62f419d9f5
+      test: ami-0e23c576dacf2e3df
+Resources:
+  DmrAutoScalingGroupPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref DmrAutoScalingGroup # Required
+      PolicyType: TargetTrackingScaling # buna bakacagiz
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 60.0
+  DmrAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: dmrautoscalingrpcfn
+      DesiredCapacity: 2
+      HealthCheckType: DmrELB
+      LaunchTemplate:
+        LaunchTemplateId: !Ref DmrMyLaunchTemplate
+        Version: 1
+      MaxSize: 4
+      MinSize: 1 # Required
+      TargetGroupARNs:
+        - !Ref DmrELBTargetGroup #!GetAtt MyTargetGrp.TargetGroupArn
+      VPCZoneIdentifier: !Ref Subnets
+  DmrELBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions: # Required
+        - TargetGroupArn: !Ref DmrELBTargetGroup # !GetAtt MyTargetGrp.TargetGroupArn
+          Type: forward
+      LoadBalancerArn: !Ref DmrELB
+      Port: 80
+      Protocol: HTTP
+  DmrELB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: osvaldoelbcfn
+      SecurityGroups:
+        - !GetAtt DmrMySecurityGroup.GroupId #!Ref MySecGrp
+      Subnets: !Ref Subnets
+      Type: application
+  DmrMyLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        ImageId: !FindInMap
+          - RegionImageMap
+          - !Ref "AWS::Region"
+          - !Ref OSSelectionEnvParameter
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyName
+        SecurityGroupIds:
+          - !GetAtt DmrMySecurityGroup.GroupId #!Ref
+        UserData:
+          !Base64 | # buna gelecegiz aws accepts only Base64 | encripted userdata from yml file
+          #!/bin/bash
+          #update os
+          yum update -y
+          #install Python3, Pip and Flask note:if you are working on ubuntu env must be enabled.
+          yum install -y Python3 && yum install -y Python3-pip -y
+          pip3 install flask -y
+          yum install git -y
+          mkdir /var/www/templates
+          chmod -R 777 /var/www/templates
+          cd /var/www/
+          wget https://raw.githubusercontent.com/demirozman/my_flask_proj27may/main/Project-001-Roman-Numerals-Converter/app.py
+          wget https://raw.githubusercontent.com/demirozman/my_flask_proj27may/main/Project-001-Roman-Numerals-Converter/Project_001_.png
+          wget https://raw.githubusercontent.com/demirozman/my_flask_proj27may/main/Project-001-Roman-Numerals-Converter/project-001-snapshot.png
+
+          cd /var/www/templates
+          # wget https://raw.githubusercontent.com/demirozman/my_flask_proj27may/main/Project-001-Roman-Numerals-Converter/templates/index.html
+          # wget https://raw.githubusercontent.com/demirozman/my_flask_proj27may/main/Project-001-Roman-Numerals-Converter/templates/result.html
+          # python3 ../app.py
+      LaunchTemplateName: dmrlaunchtemplatecfn
+  DmrELBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      IpAddressType: ipv4 # if not specified default value ipv4
+      #it might be ignored
+      Matcher:
+        # GrpcCode: "String" HTTP or GrpcCode choose one or
+        # it has default value for HTTP/s in range of 200-499 second
+        HttpCode: 200 # it is no use actually
+      Name:
+        dmrtargetgrpcfn # target group name.
+        # This name must be unique per region per account,
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref VPC
+  DmrMySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH and HTTP access # Required
+      GroupName: dmrmysecgrpcfn
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref VPC
+
+Outputs:
+  DNScfn:
+    Description: DNS of ELB
+    Value: !Join
+      - ""
+      - - "http://"
+        - !GetAtt DmrELB.DNSName
+        #- !GetAtt DmrELB.PublicDnsName
+  #WebSiteURL:
+  #Value: !Sub
+  #- http://${PublicAddress}
+  #- PublicAddress: !GetAtt WebServerHost.PublicDnsName

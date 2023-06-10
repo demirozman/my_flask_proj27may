@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  The aim of this study using AWS CloudFormation Service
+  preparing yaml page/form/template is making a practice 
+  on creating EC2 with Launch Template, setting up a 
+  Target Group and in accordance with Target Group
+  configuring  Autoscaling group and ELB balancer.
+  In Resources section UserData: will be used.
+
+Parameters:
+  VPC:
+    Description: choose a vpc
+    Type: AWS::EC2::VPC::Id
+  InstanceTypem:
+    Description: Choose a instance Type
+    Type: "String"
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.micro
+      - t2-nano
+  Keyname:
+    Description: choose a keypai
+    Type: AWS::EC2::KeyPair::KeyName
+  Env:
+    Description: Choose an ami
+    Type: String
+    Default: linux
+Mappings:
+  RegionImageMap:
+    us-east-1:
+      linux: ami-0bef6cc322bfff646
+    us-east-2:
+      linux: ami-05842f1afbf311a43
+    us-west-1:
+      linux: ami-04669a22aad391419
+    us-west-2:
+      linux: ami-03c7c1f17ee073747
+    eu-west-1:
+      linux: ami-0e23c576dacf2e3df
+Resources:
+    DmrSecGrpYaml: # 1  adim: ilk adim security group olusturmak
+    # her vpc nin kendi secgrp oluyor
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SSH ve HTTP enabled
+      GroupName: dmrsecgrp0306
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      # VpcId: !Ref VPC #en son yapacagiz
+  WebServerHostFlask:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !FindInMap
+        - RegionImageMap
+        - !Ref "AWS::Region"
+        - !Ref "Env"
+      InstanceType: !Ref InstanceTypem
+      KeyName: !Ref Keyname
+      SecurityGroupIds:
+        - !Ref DmrSecGrpYaml
+      Tags:
+        - Key: Name
+          Value: !Sub Web Server of ${AWS::StackName}
+      UserData: !Base64 |
+        #! /Bin/Bash
+        yum update -y
+        yum install -y python3 && yum install -y python3-pip
+        pip3 install flask
+        cd /home/ec2-user
+        # get private ip address of ec2 instance using instance metadata
+        TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` \
+        && PRIVATE_IP=`curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4`
+        # get public ip address of ec2 instance using instance metadata
+        TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` \
+        && PUBLIC_IP=`curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-ipv4` 
+        # get date and time of server
+        DATE_TIME=`date`
+        FOLDER="https://raw.githubusercontent.com/demirozman/my_flask_proj27may/main/Project-001-Roman-Numerals-Converter"
+        wget ${FOLDER}/app.py
+        mkdir templates && cd templates
+        wget ${FOLDER}/templates/index.html
+        wget ${FOLDER}/templates/result.html
+        cd ..
+        python3 app.py
+Outputs:
+  WebSiteURL:
+    Value: !Sub
+      - http://${PublicAddress}
+      - PublicAddress: !GetAtt WebServerHostFlask.PublicDnsName
+  #FlaskDNSName:
+  #Description: This is Dns flsak
+  #Value: !Join
+  #- ""
+  #- - "https://"
+  #  - !GetAtt webHostFlask.PublicDnsName
