@@ -1,10 +1,28 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
-  Roman Numerals Converter Application 
+  Project-001 : Roman Numerals Converter Application 
   (Python Flask) deployed on AWS EC2 with Cloudformation
+   and AWS CLI
+     Description
   The Roman Numerals Converter Application aims to convert
   the given number to the Roman numerals.
-
+  The application is to be coded in Python
+  and deployed as a web application with Flask
+  on AWS Elastic Compute Cloud (EC2) Instance
+  using AWS Cloudformation and CLI Services. 
+    - Under this project the tasks will have been complated.
+      1- Rosources stars with creating common entity Securits Groups
+      2- With regards of the SecurityGroup; ASG, ELB, Target
+       group will be designed and related EC2 Instances
+       deployed in accordance with Launch Template configuration.
+      3- The requested task will run on deployed instances
+      configured under the !#/bin/bash commend adding them 
+      to UserData section.
+      4- In UserData section github connection script will be described.
+      5- Created yaml template will be copied with scp commend.
+      6- The project yaml file will be called from s3 bucket
+      using AWS CLI terminal.
+  ...!!! This yaml template created by Osman DEMIR !!!...
 Parameters:
   Subnets:
     Description: Choose at least 2 subnets
@@ -159,14 +177,3 @@ Resources:
       VpcId: !Ref VPC
 
 Outputs:
-  DNScfn:
-    Description: DNS of ELB
-    Value: !Join
-      - ""
-      - - "http://"
-        - !GetAtt DmrELB.DNSName
-        #- !GetAtt DmrELB.PublicDnsName
-  #WebSiteURL:
-  #Value: !Sub
-  #- http://${PublicAddress}
-  #- PublicAddress: !GetAtt WebServerHost.PublicDnsName
