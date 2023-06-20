@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Phonebook Application</title>
+  </head>
+  <body>
+    <h1>Welcome to the Phonebook Application</h1>
+    <h3>Select an operation:</h3>
+    <form action="/find" method="POST">
+      <label for="name">Find the phone number of:</label>
+      <input type="text" name="name" id="name" />
+      <input type="submit" value="Find" />
+    </form>
+    <form action="/add" method="POST">
+      <label for="name">Insert name of the person:</label>
+      <input type="text" name="name" id="name" />
+      <label for="number">Insert phone number of the person:</label>
+      <input type="text" name="number" id="number" />
+      <input type="submit" value="Insert" />
+    </form>
+    <form action="/delete" method="POST">
+      <label for="name">Whom to delete from phonebook:</label>
+      <input type="text" name="name" id="name" />
+      <input type="submit" value="Delete" />
+    </form>
+    <a href="/exit">Terminate</a>
+  </body>
+</html>

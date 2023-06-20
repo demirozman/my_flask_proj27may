@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phonebook Project - 09.06.2023</title>
+    <style>
+      body {
+        max-width: 600px;
+        margin: auto;
+      }
+
+      div {
+        margin-top: 100px;
+        margin-bottom: 50px;
+        margin-right: auto;
+        margin-left: auto;
+      }
+
+      img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 15px;
+        margin: 20px 0;
+        display: inline-block;
+        border: none;
+        background: #f1f1f1;
+      }
+
+      button {
+        box-sizing: border-box;
+        background-color: #4caf50;
+        color: white;
+        padding: 16px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        opacity: 0.9;
+      }
+
+      .warning {
+        color: red;
+      }
+
+      .footnote {
+        color: rgba(0, 0, 255, 0.712);
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1>Welcome to the phonebook application</h1>
+    </div>
+    <h2>Phonebook Application</h2>
+
+    <br />
+    <form action="/" method="POST">
+      <label for="text"
+        ><span><b>Please Select One </b></span></label
+      >
+      <button type="add">Add</button>
+      <button type="submit">Find</button>
+      <button type="submit">Delete</button>
+      <button type="submit">OK</button>
+      {% if not_valid %}
+      <p class="warning">
+        <b>Not Valid! Please enter a number inclusively.</b>
+      </p>
+      {% endif %}
+    </form>
+    <p class="footnote">
+      <i
+        >This app is developed in Python by MultiCloud-DevSecOps Engineer<b
+          >{{ developer_name }}</b
+        >
+        and deployed with Flask.</b></i
+      >
+    </p>
+  </body>
+</html>

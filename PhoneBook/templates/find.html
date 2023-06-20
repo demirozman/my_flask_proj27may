@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phonebook Project - 09.06.2023</title>
+    <style>
+      body {
+        width: 600px;
+        margin: auto;
+      }
+
+      div {
+        margin-top: 100px;
+        margin-bottom: 50px;
+        margin-right: auto;
+        margin-left: auto;
+      }
+
+      img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .result {
+        color: rgb(255, 38, 0);
+        font-size: x-large;
+      }
+
+      .footnote {
+        color: rgba(0, 0, 255, 0.712);
+      }
+    </style>
+  </head>
+
+  <body>
+    <h2>Phonebook Application</h2>
+    <br />
+
+    <h3><b>Find:</b></h3>
+    <form action="/find" method="get">
+      <h2>Find phone number</h2>
+      <label for="name">Name:</label>
+      <input type="text" name="name" required />
+      <br />
+      <input type="submit" value="Find" />
+    </form>
+    <p>
+      New Contact Name
+      <span class="result"> <b> {{ name }}</b> </span>and Phone Number
+      <span class="result"><b>{{ phone_number }}</b></span>
+    </p>
+    <br /><br />
+
+    <p class="footnote">
+      <i
+        >This app is developed in Python by MultiCloud-DevSecOps Engineer<b
+          >{{ developer_name }}</b
+        >
+        and deployed with Flask. <b>{{ developer_name }}</b></i
+      >
+    </p>
+  </body>
+</html>
