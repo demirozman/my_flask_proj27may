@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  This temp launches an EC2 instance which enables SSH.
+Resources:
+  CFNInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0889a44b331db0194
+      InstanceType: t2.micro
+      KeyName: xxxxxx # Use your keypair name
+      SecurityGroups: 
+        - !Ref CFNSecGr
+      Tags: 
+        - Key: Name
+          Value: CFNInstance
+
+  CFNSecGr:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enables SSH. # Required
+      SecurityGroupIngress: 
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+  MyDBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 20  # Storage size in GB
+      Engine: mysql
+      EngineVersion: 5.7
+      DBInstanceIdentifier: my-rds-instance
+      MasterUsername: admin
+      MasterUserPassword: mypassword
+      DBInstanceClass: db.t2.micro
+      VPCSecurityGroups:
+        - !Ref CFNSecGr
+      AvailabilityZone: us-east-1a
+      MultiAZ: false
+      PubliclyAccessible: false
+      Tags:
+        - Key: Name
+          Value: MyDB

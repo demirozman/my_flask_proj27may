@@ -1,0 +1,142 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  This yml template file configures automated configuration and cloudformation tasks.
+  It includes securitygroup, rds, asg, elb, ec2, webserver, flask and github manipulations.
+  there are three security groups
+Parameters:
+  MyVPC:
+    Description: VPC Id of your existing account
+    Type: AWS::EC2::VPC::Id
+  KeyName:
+    Description: Please enter your Key pair
+    Type: AWS::EC2::KeyPair::KeyName
+  Subnets:
+    Description: Please select your subnets used by ALB
+    Type: List<AWS::EC2::Subnet::Id>
+Resources:
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP for Application Load Balancer # Required
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref MyVPC
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP for Flask Web Server and SSH for getting into EC2 # Required
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref MyVPC
+  LT:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        ImageId: ami-090e0fc566929d98b
+        InstanceType: t2.micro
+        KeyName: !Ref KeyName
+        SecurityGroupIds:
+          - !GetAtt WebServerSecurityGroup.GroupId
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub Web Server of ${AWS::StackName} Stack # stack olusurken verilen stack ismi
+        UserData:
+          Fn::Base64: !Sub
+            - |
+              #! /bin/bash
+              yum update -y
+              yum install python3 -y
+              pip3 install flask
+              pip3 install flask_mysql
+              echo "${MyDBURL}" > /home/ec2-user/dbserver.endpoint
+              TOKEN="xxxxxxxxxxxxxxxxxxxxxxx"
+              FOLDER="https://$TOKEN@raw.githubusercontent.com/demirozman/DMR-Phonebook/main/Project-004-Phonebook-Application/"
+              curl -s --create-dirs -o "/home/ec2-user/templates/index.html" -L "$FOLDER"/templates/index.html
+              curl -s --create-dirs -o "/home/ec2-user/templates/add-update.html" -L "$FOLDER"/templates/add-update.html
+              curl -s --create-dirs -o "/home/ec2-user/templates/delete.html" -L "$FOLDER"/templates/delete.html
+              curl -s --create-dirs -o "/home/ec2-user/app.py" -L "$FOLDER"/phonebook-app.py
+              python3 /home/ec2-user/app.py
+            - MyDBURL: !GetAtt DBInstance.Endpoint.Address #buna db kismiyla bakalim
+  TG:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref MyVPC
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Scheme: internet-facing
+      SecurityGroups:
+        - !GetAtt ALBSecurityGroup.GroupId
+      Subnets: !Ref Subnets
+      Type: application
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions: # Required
+        - TargetGroupArn: !Ref TG
+          Type: forward
+      LoadBalancerArn: !Ref ALB # Required
+      Port: 80 # Required
+      Protocol: HTTP # Required
+  ASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: !GetAZs ""
+      DesiredCapacity: 2
+      HealthCheckGracePeriod: 300
+      HealthCheckType: ELB
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LT
+        Version: !GetAtt LT.LatestVersionNumber
+      MaxSize: 3
+      MinSize: 1
+      TargetGroupARNs:
+        - !Ref TG
+  DBSecurityGroup:
+    Type: AWS::RDS::DBSecurityGroup
+    Properties:
+      DBSecurityGroupIngress: # Required
+        - EC2SecurityGroupId: !GetAtt WebserverSecurityGroup.GroupId
+      GroupDescription: Back-end Database # Required
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 20
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: false
+      BackupRetentionPeriod: 0
+      DBInstanceClass: db.t2.micro
+      DBInstanceIdentifier: phonebook-app
+      DBName: clarusway_phonebook
+      DBSecurityGroups:
+        - !Ref DBSecurityGroup
+      Engine: MySQL
+      EngineVersion: 8.0.32
+      MasterUsername: admin
+      MasterUserPassword: clarusway_1234
+      Port: 3306
+      PubliclyAccessible: true
+Outputs:
+  WebsiteURL:
+    Value: !Sub
+      - http://${ALBAddress}
+      - ALBAddress: !GetAtt ALB.DNSName
+    Description: Phonebook Application Load Balancer URL
